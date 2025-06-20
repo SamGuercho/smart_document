@@ -1,0 +1,8 @@
+Classify the following document content.
+
+Document:
+"""
+{document_content}
+"""
+
+Your response in one word:
