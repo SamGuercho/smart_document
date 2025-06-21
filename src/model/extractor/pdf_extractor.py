@@ -1,11 +1,11 @@
 """
-Concrete PDF extractor implementation using PyPDF2.
+Concrete PDF extractor implementation using pdfplumber.
 """
 
 from typing import Union, Dict, Any, List, Optional
 from pathlib import Path
 import logging
-import PyPDF2
+import pdfplumber
 
 from .base_pdf_extractor import BasePDFExtractor
 
@@ -14,20 +14,20 @@ logger = logging.getLogger(__name__)
 
 class PDFExtractor(BasePDFExtractor):
     """
-    Concrete implementation of PDF extractor using PyPDF2.
+    Concrete implementation of PDF extractor using pdfplumber.
     
     This class provides methods to extract text, tables, images, and metadata
-    from PDF documents using the PyPDF2 library.
+    from PDF documents using the pdfplumber library.
     """
     
     def __init__(self):
         """Initialize the PDF extractor."""
         super().__init__()
-        self._pdf_reader_cache = {}  # Simple cache for PDF readers
+        self._pdf_cache = {}  # Simple cache for PDF objects
     
     def extract_text(self, pdf_path: Union[str, Path]) -> str:
         """
-        Extract text content from a PDF file using PyPDF2.
+        Extract text content from a PDF file using pdfplumber.
         
         Args:
             pdf_path: Path to the PDF file
@@ -48,11 +48,10 @@ class PDFExtractor(BasePDFExtractor):
             raise ValueError(f"File is not a valid PDF: {pdf_path}")
         
         try:
-            with open(pdf_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
+            with pdfplumber.open(pdf_path) as pdf:
                 text = ""
                 
-                for page_num, page in enumerate(pdf_reader.pages):
+                for page_num, page in enumerate(pdf.pages):
                     try:
                         page_text = page.extract_text()
                         if page_text:
@@ -81,9 +80,8 @@ class PDFExtractor(BasePDFExtractor):
         pdf_path = Path(pdf_path)
         
         try:
-            with open(pdf_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
-                return len(pdf_reader.pages)
+            with pdfplumber.open(pdf_path) as pdf:
+                return len(pdf.pages)
         except Exception as e:
             logger.error(f"Error getting page count for {pdf_path}: {e}")
             return 0
@@ -101,23 +99,22 @@ class PDFExtractor(BasePDFExtractor):
         pdf_path = Path(pdf_path)
         
         try:
-            with open(pdf_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
-                metadata = pdf_reader.metadata
+            with pdfplumber.open(pdf_path) as pdf:
+                metadata = pdf.metadata
                 
                 if metadata:
                     return {
-                        'title': metadata.get('/Title', ''),
-                        'author': metadata.get('/Author', ''),
-                        'subject': metadata.get('/Subject', ''),
-                        'creator': metadata.get('/Creator', ''),
-                        'producer': metadata.get('/Producer', ''),
-                        'creation_date': metadata.get('/CreationDate', ''),
-                        'modification_date': metadata.get('/ModDate', ''),
-                        'page_count': len(pdf_reader.pages)
+                        'title': metadata.get('Title', ''),
+                        'author': metadata.get('Author', ''),
+                        'subject': metadata.get('Subject', ''),
+                        'creator': metadata.get('Creator', ''),
+                        'producer': metadata.get('Producer', ''),
+                        'creation_date': metadata.get('CreationDate', ''),
+                        'modification_date': metadata.get('ModDate', ''),
+                        'page_count': len(pdf.pages)
                     }
                 else:
-                    return {'page_count': len(pdf_reader.pages)}
+                    return {'page_count': len(pdf.pages)}
                     
         except Exception as e:
             logger.error(f"Error extracting metadata from {pdf_path}: {e}")
@@ -125,7 +122,7 @@ class PDFExtractor(BasePDFExtractor):
     
     def _validate_pdf_internal(self, pdf_path: Path) -> bool:
         """
-        Internal method to validate PDF file structure using PyPDF2.
+        Internal method to validate PDF file structure using pdfplumber.
         
         Args:
             pdf_path: Path to the PDF file
@@ -134,18 +131,16 @@ class PDFExtractor(BasePDFExtractor):
             True if file is a valid PDF, False otherwise
         """
         try:
-            with open(pdf_path, 'rb') as file:
-                PyPDF2.PdfReader(file)
+            with pdfplumber.open(pdf_path) as pdf:
+                # Just test if we can open and access pages
+                _ = len(pdf.pages)
             return True
         except Exception:
             return False
     
     def extract_tables(self, pdf_path: Union[str, Path]) -> List[Dict[str, Any]]:
         """
-        Extract table data from PDF using PyPDF2.
-        
-        Note: PyPDF2 has limited table extraction capabilities.
-        For better table extraction, consider using pdfplumber or tabula-py.
+        Extract table data from PDF using pdfplumber.
         
         Args:
             pdf_path: Path to the PDF file
@@ -153,14 +148,35 @@ class PDFExtractor(BasePDFExtractor):
         Returns:
             List of extracted tables as dictionaries
         """
-        logger.warning("PyPDF2 has limited table extraction capabilities. "
-                      "Consider using pdfplumber or tabula-py for better results.")
-        return []
+        pdf_path = Path(pdf_path)
+        tables = []
+        
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                for page_num, page in enumerate(pdf.pages):
+                    try:
+                        page_tables = page.extract_tables()
+                        for table_num, table in enumerate(page_tables):
+                            if table:  # Only add non-empty tables
+                                tables.append({
+                                    'page': page_num + 1,
+                                    'table_index': table_num,
+                                    'data': table,
+                                    'bbox': page.find_tables()[table_num].bbox if page.find_tables() else None
+                                })
+                    except Exception as e:
+                        logger.warning(f"Error extracting tables from page {page_num + 1}: {e}")
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Error extracting tables from {pdf_path}: {e}")
+            
+        return tables
     
     def extract_images(self, pdf_path: Union[str, Path], 
                       output_dir: Optional[Path] = None) -> List[Path]:
         """
-        Extract images from PDF using PyPDF2.
+        Extract images from PDF using pdfplumber.
         
         Args:
             pdf_path: Path to the PDF file
@@ -169,10 +185,85 @@ class PDFExtractor(BasePDFExtractor):
         Returns:
             List of paths to extracted image files
         """
-        logger.warning("Image extraction not implemented in PyPDF2 version. "
-                      "Consider using pdfplumber for image extraction.")
-        return []
+        pdf_path = Path(pdf_path)
+        image_paths = []
+        
+        if output_dir is None:
+            output_dir = pdf_path.parent / f"{pdf_path.stem}_images"
+        
+        output_dir = Path(output_dir)
+        output_dir.mkdir(exist_ok=True)
+        
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                for page_num, page in enumerate(pdf.pages):
+                    try:
+                        # Extract images from the page
+                        images = page.images
+                        for img_num, img in enumerate(images):
+                            try:
+                                # Save image to file
+                                img_filename = f"page_{page_num + 1}_img_{img_num + 1}.png"
+                                img_path = output_dir / img_filename
+                                
+                                # Convert image data to file
+                                if hasattr(img, 'stream') and img.stream:
+                                    with open(img_path, 'wb') as f:
+                                        f.write(img.stream.get_data())
+                                    image_paths.append(img_path)
+                                    
+                            except Exception as e:
+                                logger.warning(f"Error saving image {img_num + 1} from page {page_num + 1}: {e}")
+                                continue
+                                
+                    except Exception as e:
+                        logger.warning(f"Error extracting images from page {page_num + 1}: {e}")
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Error extracting images from {pdf_path}: {e}")
+            
+        return image_paths
+    
+    def extract_text_chunk(self, pdf_path: Union[str, Path], max_chars: int = 2000) -> str:
+        """
+        Extract text content from PDF, truncated to specified length.
+        Enhanced version with better text extraction using pdfplumber.
+        
+        Args:
+            pdf_path: Path to the PDF file
+            max_chars: Maximum number of characters to extract
+            
+        Returns:
+            Extracted text content (truncated)
+        """
+        pdf_path = Path(pdf_path)
+        
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                text = ""
+                
+                for page in pdf.pages:
+                    try:
+                        # Use pdfplumber's enhanced text extraction
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n"
+                            
+                        # Stop if we've reached the character limit
+                        if len(text) >= max_chars:
+                            break
+                            
+                    except Exception as e:
+                        logger.warning(f"Error extracting text from page: {e}")
+                        continue
+                
+                return text[:max_chars].strip()
+                
+        except Exception as e:
+            logger.error(f"Error reading PDF {pdf_path}: {e}")
+            return ""
     
     def clear_cache(self):
-        """Clear the PDF reader cache."""
-        self._pdf_reader_cache.clear() 
+        """Clear the PDF cache."""
+        self._pdf_cache.clear() 

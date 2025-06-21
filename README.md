@@ -1,6 +1,6 @@
 # Smart Document Classification
 
-A Python library for intelligent document classification using Large Language Models (LLMs). This project provides a modular framework for classifying business documents such as invoices, contracts, and business reports using OpenAI's GPT models.
+A Python library for intelligent document classification using Large Language Models (LLMs). This project provides a modular framework for classifying business documents such as invoices, contracts, and earnings reports using OpenAI's GPT models.
 
 ## Features
 
@@ -66,17 +66,18 @@ print(f"Logprobs: {result['logprobs']}")
 
 ### Supported Document Types
 
-The classifier supports three main document categories:
-- **Invoice** - Bills, receipts, payment requests
-- **Contract** - Legal agreements, terms of service, contracts
-- **Business Report** - Financial reports, earnings reports, business summaries
+The system can classify documents into the following categories:
+
+- **Invoice** - Bills, invoices, payment requests
+- **Contract** - Legal agreements, contracts, terms of service
+- **Earnings** - Financial reports, earnings reports, business summaries
 
 ### Running Tests
 
 Test the classifier with the provided PDF files:
 
 ```bash
-python test_llm_classifier.py
+python tests/test_llm_classifier.py
 ```
 
 This will test classification accuracy on the sample documents in `resources/data/`.

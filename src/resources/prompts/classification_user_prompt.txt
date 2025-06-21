@@ -5,4 +5,4 @@ Document:
 {document_content}
 """
 
-Your response in one word:
+Your response in one category name:

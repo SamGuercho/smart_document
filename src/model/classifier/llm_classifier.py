@@ -17,7 +17,7 @@ from ..extractor.pdf_extractor import PDFExtractor
 PROMPT_PATH = Path(__file__).parent.parent.parent / "resources" / "prompts"
 SYSTEM_PROMPT_PATH = PROMPT_PATH / "classification_system_prompts.txt"
 USER_PROMPT_PATH = PROMPT_PATH / "classification_user_prompt.txt"
-CATEGORIES = ["Invoice", "Contract", "Business Report"]
+CATEGORIES = ["Invoice", "Contract", "Earnings"]
 
 class LLMClassifier(BaseClassifier):
     """
@@ -83,10 +83,10 @@ class LLMClassifier(BaseClassifier):
         """Initialize OpenAI client with API key."""
         return OpenAI(api_key=self._api_key)
 
-    def predict(self, document_path: Union[str, Path]) -> Dict[str, Any]:
+    def predict(self, document_path: Union[str, Path]) -> ClassificationResult:
         text = self._extract_text_from_pdf(Path(document_path))
         # Escape any curly braces in the text to avoid format errors
-        escaped_text = text[:2000].replace("{", "{{").replace("}", "}}")
+        escaped_text = text[:5000].replace("{", "{{").replace("}", "}}")
         user_prompt = self._user_prompt_template.format(document_content=escaped_text)
         
         # Use chat completions API
@@ -100,7 +100,7 @@ class LLMClassifier(BaseClassifier):
             temperature=0,
             # Get logprobs for the response tokens
             logprobs=True,
-            top_logprobs=10
+            top_logprobs=20
         )
         
         content = response.choices[0].message.content.strip()
@@ -108,39 +108,19 @@ class LLMClassifier(BaseClassifier):
             logprob.token: math.exp(logprob.logprob)  # Convert log probability to confidence
             for logprob in response.choices[0].logprobs.content[0].top_logprobs
         }
+
+        # for each document type, get the confidence score
+        # Initialize confidence scores for all document types to 0
+        type_confidences = {doc_type.value: 0.0 for doc_type in DocumentType}
+        # Update confidence scores from token probabilities
+        for doc_type, confidence in token_confidences.items():
+            if doc_type in type_confidences:
+                type_confidences[doc_type] = confidence
         
-        # Parse JSON response
-        try:
-            result = json.loads(content)
-            doc_type = result.get('document_type', 'unknown')
-            confidence = result.get('confidence', 0) / 100.0  # Convert to 0-1 scale
-            justification = result.get('justification', '')
-            
-            # Map to DocumentType enum
-            if doc_type == "Invoice":
-                enum_type = DocumentType.INVOICE
-            elif doc_type == "Contract":
-                enum_type = DocumentType.CONTRACT
-            elif doc_type == "Business Report":
-                enum_type = DocumentType.EARNINGS_REPORT
-            else:
-                enum_type = DocumentType.UNKNOWN
-                
-        except (json.JSONDecodeError, KeyError) as e:
-            # Fallback parsing if JSON fails
-            enum_type = DocumentType.UNKNOWN
-            confidence = 0.0
-            justification = f"Failed to parse response: {str(e)}"
-        
-        return {
-            "result": ClassificationResult(
-                document_type=enum_type, 
-                confidence_score=confidence
-            ),
-            "logprobs": logprobs,
-            "justification": justification,
-            "raw_response": content
-        }
+        return ClassificationResult(
+                document_type=DocumentType(max(type_confidences.items(), key=lambda x: x[1])[0]),
+                confidence_score=type_confidences,
+                raw_response=content)
     
     def predict_batch(self, document_paths: List[Union[str, Path]]) -> List[ClassificationResult]:
         """

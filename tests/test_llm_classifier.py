@@ -5,8 +5,11 @@ Test script for LLMClassifier with PDF files
 
 import os
 import sys
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
+
+logging.basicConfig(level=logging.INFO)
 
 # Add src to Python path explicitly
 project_root = Path(__file__).parent.parent
@@ -35,10 +38,10 @@ def test_llm_classifier():
     
     # Test PDFs with expected classifications
     test_files = [
-        ("Contract.pdf", "Contract"),
-        ("Earnings.pdf", "Business Report"), 
         ("invoice1.pdf", "Invoice"),
-        ("invoice2.pdf", "Invoice")
+        ("invoice2.pdf", "Invoice"),
+        ("Contract.pdf", "Contract"),
+        ("Earnings.pdf", "Earnings"),
     ]
     
     # Path to resources from tests directory
@@ -62,16 +65,14 @@ def test_llm_classifier():
         
         # Classify the document
         result = classifier.predict(pdf_path)
+        logging.info(f"Results for {filename}: {result.raw_response}")
         
         # Extract results
-        predicted_type = result["result"].document_type.value
-        confidence = result["result"].confidence_score
-        justification = result["justification"]
-        logprobs = result["logprobs"]
+        predicted_type = result.document_type.value
+        confidence = result.confidence_score[predicted_type]
         
         print(f"✅ Predicted: {predicted_type}")
         print(f"📊 Confidence: {confidence:.2%}")
-        print(f"💭 Justification: {justification}")
         
         # Check if prediction matches expected
         is_correct = False
@@ -88,7 +89,6 @@ def test_llm_classifier():
             'predicted': predicted_type,
             'confidence': confidence,
             'is_correct': is_correct,
-            'justification': justification
         })
     
     # Print summary

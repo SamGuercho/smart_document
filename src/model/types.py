@@ -10,12 +10,10 @@ from typing import Dict, List, Optional, Any
 
 class DocumentType(Enum):
     """Enumeration of supported document types."""
-    CONTRACT = "contract"
-    INVOICE = "invoice"
-    PROCUREMENT_BILL = "procurement_bill"
-    ACCOUNTABILITY_REPORT = "accountability_report"
-    EARNINGS_REPORT = "earnings_report"
-    UNKNOWN = "unknown"
+    CONTRACT = "Contract"
+    INVOICE = "Invoice"
+    EARNINGS_REPORT = "Earnings_report"
+    UNKNOWN = "Unknown"
 
 
 @dataclass
@@ -47,12 +45,12 @@ class ExtractedMetadata:
 class ClassificationResult:
     """Result of document classification."""
     document_type: DocumentType
-    confidence_score: float
-    alternative_types: List[tuple[DocumentType, float]] = None
+    confidence_score: Dict[DocumentType, float]
+    raw_response: Optional[str] = None
     
     def __post_init__(self):
-        if self.alternative_types is None:
-            self.alternative_types = []
+        if self.raw_response is None:
+            self.raw_response = ""
 
 
 @dataclass
