@@ -11,7 +11,7 @@ pip install -r requirements.txt
 
 2. Run the API server:
 ```bash
-python run_api.py
+python api/server.py
 ```
 
 3. The API will be available at `http://localhost:8000`
@@ -107,32 +107,57 @@ curl -X GET "http://localhost:8000/documents/storage/stats"
 - **Description**: Get list of supported document types
 - **Response**: JSON with supported document types
 
+**Example:**
+```bash
+curl -X GET "http://localhost:8000/documents/supported-types"
+```
+
+### 8. Document Actions
+- **URL**: `GET /documents/{document_id}/actions`
+- **Description**: Get workflow actions for a specific document based on its type
+- **Parameters**:
+  - `document_id`: The document ID to get actions for
+- **Response**: JSON with list of generated actions
+
+**Example:**
+```bash
+curl -X GET "http://localhost:8000/documents/your-document-id-here/actions"
+```
+
 ## Response Format
 
 ### Analysis Response (`POST /documents/analyze`)
 
 ```json
 {
-  "document_id": "uuid-string",
-  "filename": "document.pdf",
-  "original_filename": "original_name.pdf",
+  "document_id": "d52dcbde-fef2-4c30-8ba1-153fe0000bbe",
+  "filename": "Contract.pdf",
   "classification": {
-    "type": "contract|invoice|earnings_report",
-    "confidence": 0.95
+    "type": "contract",
+    "confidence": 0.9999998063873687
   },
   "metadata": {
-    "document_date": "2023-01-15T00:00:00",
-    "total_amount": 1500.00,
-    "currency": "USD",
-    "parties": ["Company A", "Company B"],
-    "additional_fields": {}
+    "effective_date": "2019-01-10",
+    "termination_date": "2021-01-10",
+    "parties": {
+      "EMERALD HEALTH NATURALS, INC.": "Company",
+      "DR. GAETANO MORELLO N.D. INC.": "Contractor"
+    },
+    "key_terms": [
+      "scope of engagement",
+      "fees",
+      "secondment",
+      "term and termination",
+      "confidential information",
+      "independent legal advice",
+      "governing law and attornment"
+    ]
   },
   "processing_info": {
-    "processing_time": 2.5,
-    "extraction_method": "llm",
+    "processing_time": 5.28717303276062,
+    "extraction_method": "hybrid_entity_extraction",
     "errors": []
-  },
-  "stored_at": "2024-01-15T10:30:00.123456"
+  }
 }
 ```
 
@@ -142,8 +167,8 @@ curl -X GET "http://localhost:8000/documents/storage/stats"
 {
   "documents": [
     {
-      "document_id": "uuid-string",
-      "filename": "document.pdf",
+      "document_id": "d52dcbde-fef2-4c30-8ba1-153fe0000bbe",
+      "filename": "Contract.pdf",
       "classification": "contract",
       "stored_at": "2024-01-15T10:30:00.123456",
       "file_size": 2048
@@ -170,6 +195,28 @@ curl -X GET "http://localhost:8000/documents/storage/stats"
 }
 ```
 
+### Document Actions Response (`GET /documents/{document_id}/actions`)
+
+```json
+{
+  "document_id": "d52dcbde-fef2-4c30-8ba1-153fe0000bbe",
+  "document_type": "contract",
+  "actions": [
+    {
+      "id": "uuid-string",
+      "title": "Review Contract Terms",
+      "description": "Review all terms and conditions in the contract for compliance",
+      "status": "pending",
+      "priority": "high",
+      "deadline": "2024-01-22"
+    }
+  ],
+  "total_actions": 4,
+  "pending_actions": 4,
+  "completed_actions": 0
+}
+```
+
 ## Document Storage
 
 The API automatically stores all analysis results in JSON files for persistent storage. Each analysis is assigned a unique document ID that can be used to retrieve the results later.
@@ -178,7 +225,7 @@ The API automatically stores all analysis results in JSON files for persistent s
 - **Automatic Storage**: All analysis results are automatically stored
 - **Unique IDs**: Each document gets a UUID for identification
 - **Metadata Tracking**: Storage timestamps and file information are preserved
-- **File-based Storage**: Results are stored as JSON files in a `document_store` directory
+- **File-based Storage**: Results are stored as JSON files in a `data/document_store` directory
 - **Statistics**: Track total documents and storage usage
 
 ## Error Handling
@@ -203,10 +250,10 @@ Use the provided test script to test the API:
 
 ```bash
 # Test with a sample PDF
-python test_api.py
+python tests/integration/test_api.py
 
 # Test with a specific PDF file
-python test_api.py path/to/your/document.pdf
+python tests/integration/test_api.py path/to/your/document.pdf
 ```
 
 The test script will:
@@ -215,6 +262,7 @@ The test script will:
 3. List all stored documents
 4. Show storage statistics
 5. Test supported document types
+6. Generate and retrieve document actions
 
 ## Configuration
 
@@ -228,7 +276,7 @@ The API uses the same configuration as the core analyzer. Make sure to set up yo
 To run the API in development mode with auto-reload:
 
 ```bash
-python run_api.py
+python api/server.py
 ```
 
 The server will automatically reload when you make changes to the code.
