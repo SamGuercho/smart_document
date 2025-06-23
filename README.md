@@ -1,6 +1,7 @@
 # Smart Document Analyzer
 
 A comprehensive Python library for intelligent document analysis using Large Language Models (LLMs). This project provides a unified framework for classifying and extracting metadata from business documents such as invoices, contracts, and financial reports using OpenAI's GPT models.
+Please note that this library is a demo! Some features such as the actions in the API are still in a Mock state.
 
 ## Features
 
