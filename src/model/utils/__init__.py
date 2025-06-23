@@ -5,6 +5,7 @@ Utility functions for the model package.
 from .pdf_utils import extract_text_from_pdf, extract_tables_from_pdf
 from .text_utils import preprocess_text, normalize_text
 from .validation import validate_document_path, validate_metadata
+from .document_store import DocumentStore
 
 __all__ = [
     "extract_text_from_pdf",
@@ -12,5 +13,6 @@ __all__ = [
     "preprocess_text",
     "normalize_text",
     "validate_document_path",
-    "validate_metadata"
+    "validate_metadata",
+    "DocumentStore"
 ] 

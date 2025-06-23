@@ -1,33 +1,29 @@
 """
-LLM-based document classifier using language models.
+LLM-based document classifier using OpenAI API.
 """
 
-from typing import Union, List, Dict, Any
-from pathlib import Path
-import math
 import os
-from dotenv import load_dotenv
-from openai import OpenAI
 import json
+import logging
+import math
+from typing import Dict, Any, List, Optional
+from pathlib import Path
+from openai import OpenAI
 
 from .base import BaseClassifier
-from ..types import DocumentType, ClassificationResult
+from ..types import ClassificationResult, DocumentType
+from ..config.settings import get_settings
 from ..extractor.pdf_extractor import PDFExtractor
 
-PROMPT_PATH = Path(__file__).parent.parent.parent / "resources" / "prompts"
-SYSTEM_PROMPT_PATH = PROMPT_PATH / "classification_system_prompts.txt"
-USER_PROMPT_PATH = PROMPT_PATH / "classification_user_prompt.txt"
-CATEGORIES = ["Invoice", "Contract", "Earnings"]
+logger = logging.getLogger(__name__)
+
 
 class LLMClassifier(BaseClassifier):
     """
-    Document classifier using Large Language Models.
-    
-    This classifier leverages LLMs like GPT, Claude, or other language models
-    to classify documents based on their content and structure.
+    LLM-based document classifier using OpenAI API.
     """
     
-    def __init__(self, model_name: str = "gpt-4", api_key: str = None, **kwargs):
+    def __init__(self, model_name: str = None, api_key: str = None, **kwargs):
         """
         Initialize the LLM classifier.
         
@@ -37,13 +33,40 @@ class LLMClassifier(BaseClassifier):
             **kwargs: Additional configuration parameters
         """
         super().__init__()
+        
+        # Get settings
+        self.settings = get_settings()
+        
+        # Use settings if not provided
+        if model_name is None:
+            model_name = self.settings.get("llm.model_name")
+        if api_key is None:
+            api_key = self.settings.get("openai.api_key")
+        
         self.model_name = model_name
-        self.api_key = self._get_api_key()
-        self.config = kwargs
-        self._system_prompt = self._load_prompt("classification_system_prompt.txt")  # Load system prompt once
-        self._user_prompt_template = self._load_prompt("classification_user_prompt.txt")  # Load user prompt template once
-        self.client = self._get_openai_client()  # Initialize client once
-        self._pdf_extractor = PDFExtractor()  # Add PDF extractor
+        self.api_key = api_key
+        
+        # Initialize OpenAI client
+        self.client = self._initialize_client()
+        
+        # Initialize PDF extractor for text extraction
+        self.pdf_extractor = PDFExtractor()
+        
+        # Load prompts
+        self.system_prompt = self._load_system_prompt()
+        self.user_prompt_template = self._load_user_prompt()
+    
+    def _initialize_client(self):
+        """Initialize the OpenAI client."""
+        if not self.api_key:
+            logger.warning("No API key provided - LLM classification will not work")
+            return None
+        
+        try:
+            return OpenAI(api_key=self.api_key)
+        except Exception as e:
+            logger.error(f"Failed to initialize OpenAI client: {e}")
+            return None
     
     def train(self, training_data: List[tuple], **kwargs) -> None:
         """
@@ -61,39 +84,29 @@ class LLMClassifier(BaseClassifier):
         # Implementation for LLM training/fine-tuning
         pass
     
-    def _load_prompt(self, filename: str) -> str:
-        """
-        Load a prompt file from the prompts directory.
-        
-        Args:
-            filename: Name of the prompt file to load
-            
-        Returns:
-            String content of the prompt file
-        """
-        prompt_path = PROMPT_PATH / filename
+    def _load_system_prompt(self):
+        """Load system prompt from resources."""
+        prompt_path = Path(__file__).parent.parent.parent / "resources" / "prompts" / "classification_system_prompt.txt"
         with open(prompt_path, "r") as f:
             return f.read().strip()
 
-    def _get_api_key(self):
-        load_dotenv()
-        self._api_key = os.getenv("OPENAI_API_KEY")
+    def _load_user_prompt(self):
+        """Load user prompt template from resources."""
+        prompt_path = Path(__file__).parent.parent.parent / "resources" / "prompts" / "classification_user_prompt.txt"
+        with open(prompt_path, "r") as f:
+            return f.read().strip()
 
-    def _get_openai_client(self):
-        """Initialize OpenAI client with API key."""
-        return OpenAI(api_key=self._api_key)
-
-    def predict(self, document_path: Union[str, Path]) -> ClassificationResult:
+    def predict(self, document_path: str) -> ClassificationResult:
         text = self._extract_text_from_pdf(Path(document_path))
         # Escape any curly braces in the text to avoid format errors
         escaped_text = text[:5000].replace("{", "{{").replace("}", "}}")
-        user_prompt = self._user_prompt_template.format(document_content=escaped_text)
+        user_prompt = self.user_prompt_template.format(document_content=escaped_text)
         
         # Use chat completions API
         response = self.client.chat.completions.create(
             model=self.model_name,
             messages=[
-                {"role": "system", "content": self._system_prompt},
+                {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
             max_tokens=1,
@@ -122,7 +135,7 @@ class LLMClassifier(BaseClassifier):
                 confidence_score=type_confidences,
                 raw_response=content)
     
-    def predict_batch(self, document_paths: List[Union[str, Path]]) -> List[ClassificationResult]:
+    def predict_batch(self, document_paths: List[str]) -> List[ClassificationResult]:
         """
         Classify multiple documents using LLM.
         
@@ -145,7 +158,7 @@ class LLMClassifier(BaseClassifier):
         Returns:
             Extracted text content
         """
-        return self._pdf_extractor.extract_text_chunk(pdf_path, max_chars=2000)
+        return self.pdf_extractor.extract_text(pdf_path)
     
     def _create_classification_prompt(self, text_content: str) -> str:
         """

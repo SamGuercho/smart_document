@@ -1,0 +1,47 @@
+# Smart Document Processing Configuration
+
+# OpenAI Configuration
+openai:
+  api_key: ${OPENAI_API_KEY}
+  request_timeout: 60
+  max_tokens: 2048
+  temperature: 0.0
+
+# LLM Configuration
+llm:
+  provider: openai
+  model_name: gpt-4
+  timeout: 30
+  max_retries: 3
+
+# Classifier Configuration
+classifier:
+  type: llm
+  model_name: gpt-4
+  confidence_threshold: 0.7
+  batch_size: 10
+
+# Extractor Configuration
+extractor:
+  max_text_length: 10_000
+
+# Pipeline Configuration
+pipeline:
+  enable_validation: true
+  save_intermediate_results: false
+  max_retries: 3
+  timeout: 30
+
+# Processing Configuration
+processing:
+  max_file_size_mb: 50
+  supported_formats:
+    - .pdf
+  temp_dir: ./temp
+  output_dir: ./output
+
+# Logging Configuration
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: model.log 

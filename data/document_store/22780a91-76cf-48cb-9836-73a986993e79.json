@@ -1,0 +1,34 @@
+{
+  "document_id": "22780a91-76cf-48cb-9836-73a986993e79",
+  "filename": "tmpibltj8yp.pdf",
+  "classification": {
+    "type": "contract",
+    "confidence": 0.9999998063873687
+  },
+  "metadata": {
+    "effective_date": "2013-03-11",
+    "termination_date": "unknown",
+    "parties": {
+      "Albert Simionescu": "Consultant",
+      "Macco Internatioanl Corp.": "Company"
+    },
+    "key_terms": [
+      "Consultant's Services",
+      "Consideration",
+      "Independent Contractor",
+      "Confidentiality",
+      "Term",
+      "Notice",
+      "Entire Agreement and Amendments",
+      "Binding Effect, Assignment",
+      "Governing Law, Severability"
+    ]
+  },
+  "processing_info": {
+    "processing_time": 6.634751796722412,
+    "extraction_method": "hybrid_entity_extraction",
+    "errors": []
+  },
+  "original_filename": "ContractAdded.pdf",
+  "stored_at": "2025-06-22T21:10:36.698257"
+}

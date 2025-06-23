@@ -1,0 +1,8 @@
+You are an earnings report analysis assistant. Extract the following metadata from the earnings report text provided below. Return the result as a JSON object with the following fields:
+
+- "company_name": the name of the company mentioned in the report.
+- "reporting_period": the time period covered by the earnings report (e.g., "Q1 2024", "FY 2023", "Q3 2024").
+- "key_metrics": a dictionary of important financial metrics mentioned in the report (e.g., revenue, net income, EPS, EBITDA, cash flow).
+- "executive_summary": a summary of the key highlights and performance overview from the executive section.
+
+If any information is not explicitly stated, write `"unknown"` or `"not specified"`.

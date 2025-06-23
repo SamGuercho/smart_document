@@ -1,0 +1,30 @@
+{
+  "document_id": "eda43839-47da-470f-bbdd-605a7f0073bc",
+  "filename": "tmp2zt00g7t.pdf",
+  "classification": {
+    "type": "invoice",
+    "confidence": 0.9999998063873687
+  },
+  "metadata": {
+    "vendor": "Example, LLC",
+    "amount": 19.0,
+    "currency": "USD",
+    "due_date": "2024-03-25",
+    "status": "PAID",
+    "line_items": [
+      {
+        "description": "Subscription",
+        "quantity": 1,
+        "unit_price": 19.0,
+        "total_price": 19.0
+      }
+    ]
+  },
+  "processing_info": {
+    "processing_time": 3.5553319454193115,
+    "extraction_method": "hybrid_entity_extraction",
+    "errors": []
+  },
+  "original_filename": "invoice1.pdf",
+  "stored_at": "2025-06-22T19:23:27.817275"
+}

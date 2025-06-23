@@ -1,0 +1,22 @@
+=============== Invoice ===============
+{invoice_text}
+
+=============== End of Invoice ===============
+
+Considerations to pass the test:
+1. You must follow the *exact* format of the fields as below, else you will be penalized.
+2. Do not invent or rename fields. 
+3. Return the JSON only with those fields: "vendor", "amount", "currency", "due_date", "status", "line_items".
+
+- "vendor": Should look like a company name or a person name.
+- "amount": int or float.
+- "currency": 3 letters code in ISO 4217 format.
+- "due_date": "YYYY-MM-DD"
+- "status": "PAID", "UNPAID", "PARTIALLY_PAID", "OVERDUE", "UNKNOWN"
+- "line_items": a list of dictionaries with the following keys:
+    - "description": a string describing the item or service. It can be a product/service name or a description of the item/service.
+    - "quantity": int or float.
+    - "unit_price": int or float.
+    - "total_price": int or float.
+
+Only output the final JSON object with the exact keys requested. Do not repeat the prompt or provide explanations.

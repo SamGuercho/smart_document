@@ -1,0 +1,32 @@
+{
+  "document_id": "3b8dba15-32ce-4294-9267-b5384dffde73",
+  "filename": "tmpyu2952ik.pdf",
+  "classification": {
+    "type": "contract",
+    "confidence": 0.9999998063873687
+  },
+  "metadata": {
+    "effective_date": "2019-01-10",
+    "termination_date": "2021-01-10",
+    "parties": {
+      "EMERALD HEALTH NATURALS, INC.": "Company",
+      "DR. GAETANO MORELLO N.D. INC.": "Contractor"
+    },
+    "key_terms": [
+      "Scope of Engagement",
+      "Fees",
+      "Secondment",
+      "Term and Termination",
+      "Confidential Information",
+      "Independent Legal Advice",
+      "Governing Law and Attornment"
+    ]
+  },
+  "processing_info": {
+    "processing_time": 6.413049697875977,
+    "extraction_method": "hybrid_entity_extraction",
+    "errors": []
+  },
+  "original_filename": "Contract.pdf",
+  "stored_at": "2025-06-22T19:18:11.994273"
+}

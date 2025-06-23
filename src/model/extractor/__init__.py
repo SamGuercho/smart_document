@@ -13,6 +13,11 @@ from .field_extractors import (
     PartyExtractor,
     CurrencyExtractor
 )
+from .entity_extractor import BaseEntityExtractor
+from .invoice_extractor import InvoiceExtractor
+from .contract_extractor import ContractExtractor
+from .report_extractor import ReportExtractor
+from .extractor_factory import ExtractorFactory
 
 __all__ = [
     "BaseExtractor",
@@ -23,5 +28,10 @@ __all__ = [
     "DateExtractor",
     "AmountExtractor",
     "PartyExtractor",
-    "CurrencyExtractor"
+    "CurrencyExtractor",
+    "BaseEntityExtractor",
+    "InvoiceExtractor",
+    "ContractExtractor",
+    "ReportExtractor",
+    "ExtractorFactory"
 ] 

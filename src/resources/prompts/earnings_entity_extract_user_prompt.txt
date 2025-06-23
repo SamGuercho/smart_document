@@ -1,0 +1,22 @@
+=============== Earnings Report ===============
+{earnings_text}
+
+=============== End of Earnings Report ===============
+
+Considerations to pass the test:
+1. You must follow the *exact* format of the fields as below, else you will be penalized.
+2. Do not invent or rename fields. 
+3. Return the JSON only with those fields: "reporting_period", "key_metrics", "executive_summary".
+
+- company_name: the name of the company mentioned in the report.
+- "reporting_period": Should be a string representing the time period (e.g., "Q1 2024", "FY 2023", "Q3 2024").
+- "key_metrics": a list of strings containing important financial metrics mentioned in the report.
+- "executive_summary": a string containing a summary of key highlights and performance overview.
+
+Only output the final JSON object with the exact keys requested. Do not repeat the prompt or provide explanations.
+
+The format of each field MUST be as follows:
+- "company_name": "string" (e.g., "Apple Inc.", "Microsoft Corporation", "Amazon.com, Inc.")
+- "reporting_period": "string" (e.g., "Q1 2024", "FY 2023", "Q3 2024")
+- "key_metrics": a dictionary of metrics, (ex: {{"Revenue": "1000000", "Net Income": "100000", "EPS": "1.00", "EBITDA": "100000", "Cash Flow": "100000"}})
+- "executive_summary": a description of the key highlights and performance overview in a string

@@ -1,0 +1,34 @@
+{
+  "document_id": "9767fffc-8e36-444e-ae20-3595af4a9b1b",
+  "filename": "tmpl557r9ah.pdf",
+  "classification": {
+    "type": "financial",
+    "confidence": 0.9999996871837189
+  },
+  "metadata": {
+    "company_name": "Alphabet",
+    "reporting_period": "Q1 2025",
+    "key_metrics": {
+      "Revenues": "$90,234",
+      "Cost of Revenues": "$36,361",
+      "Research and Development": "$13,556",
+      "Sales and Marketing": "$6,172",
+      "General and Administrative": "$3,539",
+      "Total Costs and Expenses": "$59,628",
+      "Income from operations": "$30,606",
+      "Other income (expense), net": "$11,183",
+      "Income before income taxes": "$41,789",
+      "Provision for income taxes": "$7,249",
+      "Net income": "$34,540",
+      "Diluted EPS": "$2.81"
+    },
+    "executive_summary": "not specified"
+  },
+  "processing_info": {
+    "processing_time": 8.230215787887573,
+    "extraction_method": "hybrid_entity_extraction",
+    "errors": []
+  },
+  "original_filename": "Earnings.pdf",
+  "stored_at": "2025-06-22T19:26:21.644696"
+}

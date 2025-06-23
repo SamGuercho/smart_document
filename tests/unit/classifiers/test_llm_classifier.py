@@ -8,6 +8,7 @@ import sys
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
+from model.types import DocumentType
 
 logging.basicConfig(level=logging.INFO)
 
@@ -38,10 +39,10 @@ def test_llm_classifier():
     
     # Test PDFs with expected classifications
     test_files = [
-        ("invoice1.pdf", "Invoice"),
-        ("invoice2.pdf", "Invoice"),
-        ("Contract.pdf", "Contract"),
-        ("Earnings.pdf", "Earnings"),
+        ("invoice1.pdf", DocumentType.INVOICE),
+        ("invoice2.pdf", DocumentType.INVOICE),
+        ("Contract.pdf", DocumentType.CONTRACT),
+        ("Earnings.pdf", DocumentType.EARNINGS_REPORT),
     ]
     
     # Path to resources from tests directory
@@ -76,7 +77,7 @@ def test_llm_classifier():
         
         # Check if prediction matches expected
         is_correct = False
-        if predicted_type.lower() in expected_type.lower() or expected_type.lower() in predicted_type.lower():
+        if predicted_type.lower() in expected_type.value.lower() or expected_type.value.lower() in predicted_type.lower():
             print("🎯 CORRECT!")
             is_correct = True
         else:

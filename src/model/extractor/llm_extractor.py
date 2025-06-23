@@ -5,9 +5,16 @@ LLM-based metadata extractor using language models.
 from typing import Union, List, Dict, Any
 from pathlib import Path
 from datetime import datetime
+import os
+import json
+import logging
+from openai import OpenAI
 
 from .base import BaseExtractor
 from ..types import ExtractedMetadata, ExtractionResult
+from ..config.settings import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 class LLMExtractor(BaseExtractor):
@@ -18,7 +25,7 @@ class LLMExtractor(BaseExtractor):
     from unstructured document content.
     """
     
-    def __init__(self, model_name: str = "gpt-4", api_key: str = None, **kwargs):
+    def __init__(self, model_name: str = None, api_key: str = None, **kwargs):
         """
         Initialize the LLM extractor.
         
@@ -28,14 +35,36 @@ class LLMExtractor(BaseExtractor):
             **kwargs: Additional configuration parameters
         """
         super().__init__()
+        
+        # Get settings
+        self.settings = get_settings()
+        
+        # Use settings if not provided
+        if model_name is None:
+            model_name = self.settings.get_model_name()
+        if api_key is None:
+            api_key = self.settings.get_api_key()
+        
         self.model_name = model_name
         self.api_key = api_key
         self.config = kwargs
-        self.client = None
+        self.client = self._initialize_client()
         self.extraction_fields = [
             "document_date", "total_amount", "currency", 
             "parties", "additional_fields"
         ]
+    
+    def _initialize_client(self):
+        """Initialize the OpenAI client."""
+        if not self.api_key:
+            logger.warning("No API key provided - LLM extraction will not work")
+            return None
+        
+        try:
+            return OpenAI(api_key=self.api_key)
+        except Exception as e:
+            logger.error(f"Failed to initialize OpenAI client: {e}")
+            return None
     
     def extract(self, document_path: Union[str, Path], 
                 document_type: str = None) -> ExtractionResult:

@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Union, Dict, Any, List, Optional
 from pathlib import Path
 import logging
+from model.types import DocumentType
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class BasePDFExtractor(ABC):
     This class defines the interface for PDF content extraction,
     including text, tables, images, and metadata extraction.
     """
+    _document_type: DocumentType = DocumentType.UNKNOWN
     
     def __init__(self):
         """Initialize the base PDF extractor."""

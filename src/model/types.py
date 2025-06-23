@@ -3,17 +3,28 @@ Type definitions for document classification and metadata extraction.
 """
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 from typing import Dict, List, Optional, Any
+from pydantic import BaseModel
 
 
 class DocumentType(Enum):
     """Enumeration of supported document types."""
     CONTRACT = "Contract"
     INVOICE = "Invoice"
-    EARNINGS_REPORT = "Earnings_report"
+    EARNINGS_REPORT = "Financial"
     UNKNOWN = "Unknown"
+
+
+class Action(BaseModel):
+    """Model for document actions."""
+    id: str
+    title: str
+    description: Optional[str] = None
+    status: str  # e.g., "pending", "completed"
+    priority: Optional[str] = "medium"  # e.g., "low", "medium", "high"
+    deadline: Optional[date] = None
 
 
 @dataclass
